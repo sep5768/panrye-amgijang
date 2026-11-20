@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#4f46b8">
+<meta name="description" content="판례를 타이핑하며 외우는 판례암기장">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="판례암기장">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>판례암기장</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f6f9; --white:#fff;
+    --sky:#ffffff; --sky-line:#e8e7ef;
+    --ink:#1d1b2e; --ink2:#4a4860; --ink3:#8e8ca3;
+    --line:#e6e5ee; --line2:#efeef5;
+    --accent:#4f46b8; --accent-dark:#3e3796; --accent-soft:#efeefb;
+    --bad:#d9443a; --bad-soft:#fdeeed;
+    --mark:#fff1b8;
+    --sans:"IBM Plex Sans KR",system-ui,sans-serif;
+    --serif:"Noto Serif KR",serif;
+    --r:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;display:flex;flex-direction:column;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
+  button,input,textarea,select{font-family:var(--sans);color:var(--ink)}
+  button{font-size:13px;cursor:pointer}
+  svg{flex:none}
+  mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
+
+  .btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--white);padding:7px 13px;border-radius:8px;font-weight:500;transition:background .15s,border-color .15s;white-space:nowrap}
+  .btn:hover{border-color:#cfcde0;background:#fafafd}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-dark)}
+  .btn.danger{color:var(--bad)}
+  .btn.danger:hover{background:var(--bad-soft);border-color:#f3c5c1}
+  .btn.dangerfill{background:var(--bad);border-color:var(--bad);color:#fff}
+  .btn.sm{padding:5px 10px;font-size:12px}
+  .btn[disabled]{opacity:.6;cursor:wait}
+  .badge{display:inline-block;min-width:18px;padding:0 6px;border-radius:9px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:600;line-height:18px;text-align:center}
+
+  /* 헤더 */
+  .top{display:flex;align-items:center;gap:12px;padding:10px 20px;background:var(--sky);border-bottom:1px solid var(--sky-line);flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;letter-spacing:-.02em;margin-right:8px}
+  .brand .mark{width:28px;height:28px;border-radius:8px;background:var(--accent);display:grid;place-items:center}
+  .loader{position:relative}
+  .menu{position:absolute;top:calc(100% + 6px);left:0;z-index:20;min-width:250px;background:var(--white);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 12px 32px rgba(30,25,70,.12);padding:6px}
+  .menu label{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:7px;cursor:pointer}
+  .menu label:hover{background:var(--accent-soft)}
+  .menu .cnt{margin-left:auto;color:var(--ink3);font-size:12px}
+  .opts{display:flex;gap:14px;color:var(--ink2);font-size:13px}
+  .opts label{display:flex;align-items:center;gap:5px;cursor:pointer}
+  input[type=checkbox]{accent-color:var(--accent)}
+  .spacer{flex:1}
+
+  /* 암기장 */
+  .book{flex:1;display:grid;grid-template-columns:minmax(340px,40%) 1fr;min-height:0}
+  .left{background:var(--white);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+  .search{padding:18px 18px 8px}
+  .search label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:7px}
+  .sbox{position:relative}
+  .sbox svg{position:absolute;left:12px;top:50%;transform:translateY(-50%)}
+  .sbox input{width:100%;font-size:15px;padding:10px 12px 10px 38px;border:1px solid var(--line);border-radius:9px;background:var(--bg);outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
+  .sbox input:focus{background:#fff;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .info{padding:4px 18px 10px;font-size:12px;color:var(--ink3)}
+  .list{flex:1;overflow:auto;padding:0 12px 24px}
+
+  .gh{width:100%;display:flex;align-items:center;gap:7px;border:none;background:none;text-align:left;border-radius:8px;padding:8px 8px}
+  .gh:hover{background:var(--bg)}
+  .gh .gchev{color:var(--ink3);transition:transform .2s;transform:rotate(90deg)}
+  .grp.closed > .gh .gchev{transform:rotate(0deg)}
+  .grp.closed > .grp-body{display:none}
+  .gh.set{font-weight:700;font-size:13px;color:var(--ink2);letter-spacing:.01em}
+  .gh.topic{font-weight:600;font-size:14px;color:var(--ink);padding-left:16px}
+  .gh .n{margin-left:auto;font-size:11px;font-weight:500;color:var(--ink3)}
+  .grp-topic > .grp-body{padding-left:14px}
+  .grp-set + .grp-set{margin-top:10px;padding-top:6px;border-top:1px solid var(--line2)}
+
+  .item{border-radius:var(--r);margin-bottom:3px;border:1px solid transparent;transition:background .15s,border-color .15s}
+  .item-head{width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border:none;background:none;text-align:left;border-radius:var(--r)}
+  .item:hover{background:var(--bg)}
+  .item.active{border-color:#dcd9f3;background:#f7f6fe}
+  .du{font-weight:600;font-size:12.5px;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:6px;white-space:nowrap}
+  .title{font-weight:500;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .now{font-size:11px;font-weight:600;color:#fff;background:var(--accent);padding:1px 7px;border-radius:9px;white-space:nowrap}
+  .prog{font-size:11px;font-weight:600;color:var(--accent);white-space:nowrap}
+  .chev{color:var(--ink3);transition:transform .2s}
+  .item.open .chev{transform:rotate(90deg)}
+  .snip{font-family:var(--serif);font-size:13px;color:var(--ink2);padding:0 12px 9px 12px;line-height:1.6;word-break:keep-all}
+  .item.open .snip{display:none}
+  .item-body{display:none;padding:2px 12px 12px}
+  .item.open .item-body{display:block}
+  .orig{font-family:var(--serif);font-size:15px;line-height:1.9;color:var(--ink);word-break:keep-all;padding:12px 14px;background:#fff;border:1px solid var(--line2);border-radius:8px}
+  .orig.none{font-family:var(--sans);font-size:13px;color:var(--ink3)}
+  .item-foot{display:flex;justify-content:flex-end;margin-top:8px}
+  body.hide-orig .orig, body.hide-orig .snip{filter:blur(5px);user-select:none;transition:filter .2s}
+  body.hide-orig .orig:hover, body.hide-orig .snip:hover{filter:none}
+  .empty{color:var(--ink3);text-align:center;padding:40px 10px;line-height:1.8}
+
+  /* 판례 입력창 */
+  .right{position:relative;background:var(--white);min-height:0;display:flex;flex-direction:column;cursor:text}
+  .typing{flex:1;overflow:auto;padding:30px 44px 84px;font-family:var(--serif);font-size:19px;line-height:2.3em;word-break:keep-all;
+    background-image:linear-gradient(to bottom,transparent calc(2.3em - 1px),var(--line2) calc(2.3em - 1px));background-size:100% 2.3em;background-position:0 30px;background-attachment:local}
+  .thead{display:flex;align-items:center;gap:10px;padding:16px 44px 12px;border-bottom:1px solid var(--line2);min-height:58px;flex-wrap:wrap}
+  .thead:empty{display:none}
+  .thead .du{font-size:15px;padding:4px 11px}
+  .thead .tt-topic{font-weight:700;font-size:16px}
+  .thead .tt-sep{color:var(--ink3)}
+  .thead .tt-title{font-size:15px;color:var(--ink2)}
+  .right.drawer-open .thead{padding-right:calc(min(460px,92%) + 28px)}
+  .w{display:inline;margin-right:.36em}
+  .w.bad s{color:var(--ink);text-decoration:line-through;text-decoration-color:var(--ink);text-decoration-thickness:2px}
+  .w .hint{color:var(--bad);margin-left:.22em}
+  #cur{font:inherit;border:none;outline:none;background:transparent;padding:0;min-width:1.2em;caret-color:var(--accent);position:relative;z-index:1;color:var(--ink);vertical-align:baseline}
+  .curwrap{position:relative;display:inline-block}
+  .ghost{position:absolute;left:0;top:0;bottom:0;display:flex;align-items:center;color:#b9b7c9;pointer-events:none;white-space:pre}
+  .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--ink3);text-align:center;padding:40px;pointer-events:none;line-height:1.8}
+  .status{position:absolute;right:16px;bottom:14px;display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ink3);background:rgba(255,255,255,.94);padding:6px 10px;border-radius:8px}
+  .status b{color:var(--ink2);font-weight:600}
+  .status span{white-space:nowrap}
+  .right.drawer-open .status .keyhint{display:none}
+  .status .done{color:var(--accent);font-weight:600}
+
+  /* 모달 공통 */
+  .modal-bg{position:fixed;inset:0;background:rgba(25,22,50,.32);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .modal-bg[hidden]{display:none}
+  .modal{background:var(--white);border-radius:14px;width:min(1040px,100%);height:min(760px,100%);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(25,22,50,.25)}
+  .mhead{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--sky);border-bottom:1px solid var(--sky-line)}
+  .mhead b{font-size:16px;font-weight:700}
+  .mbody{flex:1;display:grid;grid-template-columns:250px 1fr;min-height:0}
+  .msets{border-right:1px solid var(--line);padding:14px 10px;overflow:auto;background:var(--bg);display:flex;flex-direction:column;gap:2px}
+  .msearch{margin-bottom:10px}
+  .msearch .sbox input{font-size:13px;padding:8px 10px 8px 34px;background:#fff}
+  .mlabel{font-size:11px;font-weight:600;color:var(--ink3);padding:4px 10px 6px;letter-spacing:.04em}
+  .mset{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:500}
+  .mset:hover{background:#ececf4}
+  .mset.sel{background:var(--white);box-shadow:0 1px 3px rgba(30,25,70,.1);color:var(--accent)}
+  .mset .n{margin-left:auto;font-size:12px;color:var(--ink3);font-weight:400}
+  .mset.lvl2{padding-left:30px;font-weight:400;font-size:13px}
+  .mset.addtopic{color:var(--accent);font-size:12px}
+  .mset .gchev{color:var(--ink3);transition:transform .2s}
+  .mset.expanded .gchev{transform:rotate(90deg)}
+  .msep{height:1px;background:var(--line);margin:10px 4px}
+  .medit{padding:20px 22px;overflow:auto}
+  .crumb{font-size:12px;color:var(--ink3);margin-bottom:4px}
+  .crumb a{color:var(--accent);cursor:pointer;text-decoration:none}
+  .crumb a:hover{text-decoration:underline}
+  .sethead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .sethead input{flex:1;font-size:19px;font-weight:700;border:none;border-bottom:2px solid transparent;padding:4px 2px;outline:none;background:none}
+  .sethead input:hover{border-bottom-color:var(--line)}
+  .sethead input:focus{border-bottom-color:var(--accent)}
+  .sethead .ttl{flex:1;font-size:19px;font-weight:700;padding:4px 2px}
+  .subinfo{font-size:12px;color:var(--ink3);margin:0 2px 16px}
+  .bar{display:flex;align-items:center;gap:10px;margin:4px 0 10px}
+  .bar .lbl{font-size:12px;font-weight:600;color:var(--ink2)}
+  .lrow{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:var(--r);margin-bottom:6px;cursor:pointer;background:#fff;transition:border-color .15s,background .15s}
+  .lrow:hover{border-color:#cfcde0;background:#fcfcff}
+  .lrow .num{color:var(--ink3);font-size:12px;min-width:18px}
+  .lrow .title{flex:none;max-width:40%}
+  .lrow .tname{font-weight:600;flex:1}
+  .lprev{flex:1;min-width:0;color:var(--ink3);font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .lrow .loc{font-size:11px;color:var(--ink3);white-space:nowrap}
+  .srow{display:block}
+  .srow .top1{display:flex;align-items:center;gap:10px}
+  .srow .snip{padding:6px 0 0 0}
+  .add{width:100%;justify-content:center;border-style:dashed;color:var(--accent);padding:11px}
+  .mfoot{display:flex;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--line);flex-wrap:wrap}
+  .note{font-size:12px;color:var(--ink3)}
+  .pastebox{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px}
+  .pastebox[hidden]{display:none}
+  .pastebox textarea{flex:1;height:110px;font-family:ui-monospace,monospace;font-size:12px;padding:8px;border:1px solid var(--line);border-radius:8px}
+
+  /* 판례 추가·수정 화면 */
+  .ebox{background:#fff;border-radius:14px;width:min(760px,100%);max-height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(25,22,50,.3)}
+  .ebody{padding:18px 20px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+  .erow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .erow.du-title{grid-template-columns:170px 1fr}
+  .fld label,.flabel{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+  .fld input,.fld select,.ebody textarea{display:block;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:var(--bg);outline:none;transition:border-color .15s,background .15s}
+  .fld input:focus,.fld select:focus,.ebody textarea:focus{border-color:var(--accent);background:#fff}
+  .ebody textarea{font-family:var(--serif);font-size:15px;line-height:1.75;min-height:220px;resize:vertical}
+  .lab-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;min-height:28px}
+  .lab-row .flabel{margin:0}
+  .ocr-note{font-size:12px;color:var(--ink3)}
+
+  /* 암기 팁 창 */
+  .drawer{position:absolute;top:0;right:0;bottom:0;width:min(460px,92%);background:#fff;border-left:1px solid var(--line);box-shadow:-12px 0 32px rgba(30,25,70,.08);display:flex;flex-direction:column;z-index:5;cursor:default;transform:translateX(100%);visibility:hidden;transition:transform .25s ease,visibility .25s}
+  .drawer.show{transform:none;visibility:visible}
+  .right.drawer-open .typing{padding-right:calc(min(460px,92%) + 28px)}
+  .right.drawer-open .status{right:calc(min(460px,92%) + 16px)}
+  .dhead{display:flex;align-items:center;gap:8px;padding:13px 16px;background:var(--sky);border-bottom:1px solid var(--sky-line)}
+  .dhead .dt{font-weight:700;display:flex;align-items:center;gap:6px}
+  .dhead .ds{font-size:12px;color:var(--ink2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dbody{flex:1;overflow:auto;padding:16px 18px 24px;display:flex;flex-direction:column;gap:20px}
+  .dsec h4{margin:0 0 8px;font-size:12px;font-weight:700;color:var(--ink2)}
+  .dsum{background:var(--accent-soft);border-radius:8px;padding:10px 12px;line-height:1.65;font-weight:500;word-break:keep-all}
+  .chunk{display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .chunk:last-child{border-bottom:none}
+  .clabel{flex:none;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:6px;height:fit-content;white-space:nowrap}
+  .ctext{font-family:var(--serif);font-size:14px;line-height:1.75;word-break:keep-all}
+  .kw{display:flex;flex-direction:column;gap:7px}
+  .kw div{font-size:13px;line-height:1.55;word-break:keep-all}
+  .kw b{font-family:var(--serif);font-weight:600;background:var(--mark);padding:0 4px;border-radius:3px;margin-right:6px}
+  .mn{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+  .mn .top1{display:flex;align-items:center;gap:8px}
+  .mn .parts{font-size:13px;color:var(--ink2);margin-top:6px;line-height:1.6;word-break:keep-all}
+  .mn .parts b{color:var(--accent)}
+  .trap{font-size:13px;line-height:1.6;padding:5px 0;word-break:keep-all}
+  .trap .ph{font-family:var(--serif);font-weight:600;background:var(--bad-soft);padding:0 4px;border-radius:3px}
+  .mine{font-family:var(--serif);font-size:14px;line-height:1.9}
+  .mine s{text-decoration-thickness:2px}
+  .mine .ok{color:var(--bad)}
+  .dnote{font-size:11.5px;color:var(--ink3);line-height:1.6}
+  .loading{color:var(--ink2);display:flex;align-items:center;gap:9px;padding:6px 0}
+  .spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .ninput{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:14px;outline:none;margin-top:6px;background:var(--bg)}
+  .ninput:focus{border-color:var(--accent);background:#fff}
+
+  /* 사진 자르기 */
+  .crop-box{width:min(920px,100%);height:min(820px,100%)}
+  .crop-hint{padding:10px 18px;font-size:12.5px;color:var(--ink2);border-bottom:1px solid var(--line);line-height:1.6}
+  .crop-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:18px;background:#2a2838;overflow:hidden}
+  .crop-wrap{position:relative;line-height:0;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;overflow:hidden;max-width:100%;max-height:100%}
+  .crop-canvas{display:block;max-width:100%;max-height:calc(min(820px,100vh - 40px) - 210px);width:auto;height:auto}
+  .crop-rect{position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(10,8,25,.55);cursor:move}
+  .crop-rect::after{content:"";position:absolute;inset:0;background-image:linear-gradient(to right,rgba(255,255,255,.35) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.35) 1px,transparent 1px);background-size:33.33% 33.33%;pointer-events:none}
+  .crop-rect .h{position:absolute;width:16px;height:16px;background:#fff;border:2px solid var(--accent);border-radius:4px;z-index:1}
+  .h[data-d=nw]{left:-9px;top:-9px;cursor:nwse-resize} .h[data-d=ne]{right:-9px;top:-9px;cursor:nesw-resize}
+  .h[data-d=sw]{left:-9px;bottom:-9px;cursor:nesw-resize} .h[data-d=se]{right:-9px;bottom:-9px;cursor:nwse-resize}
+  .h[data-d=n]{left:50%;top:-9px;margin-left:-8px;cursor:ns-resize} .h[data-d=s]{left:50%;bottom:-9px;margin-left:-8px;cursor:ns-resize}
+  .h[data-d=w]{top:50%;left:-9px;margin-top:-8px;cursor:ew-resize} .h[data-d=e]{top:50%;right:-9px;margin-top:-8px;cursor:ew-resize}
+
+  .ocr-wrap{position:relative;display:inline-block}
+  .ocr-menu{left:auto;right:0;min-width:230px}
+  .ocr-menu button{display:flex;width:100%;align-items:center;gap:10px;padding:9px 10px;border:none;background:none;border-radius:7px;text-align:left}
+  .ocr-menu button:hover{background:var(--accent-soft)}
+  .ocr-menu small{display:block;font-size:11px;color:var(--ink3);margin-top:1px}
+
+  /* 휴지통 */
+  .trow{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px}
+  .ttype{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;white-space:nowrap}
+  .ttype.set{background:#fff3e0;color:#b26a00}
+  .ttype.topic{background:#eef7ea;color:#3f7a2b}
+  .ttype.item{background:var(--accent-soft);color:var(--accent)}
+  .tmain{flex:1;min-width:0}
+  .tname2{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tmeta{font-size:12px;color:var(--ink3);margin-top:2px}
+
+  /* 확인 팝업 */
+  .cbox{background:#fff;border-radius:14px;padding:24px 24px 18px;width:min(380px,100%);box-shadow:0 24px 64px rgba(25,22,50,.3)}
+  .cbox h3{margin:0 0 8px;font-size:16px;font-weight:700}
+  .cbox p{margin:0;color:var(--ink2);line-height:1.65;word-break:keep-all}
+  .cbtns{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 15px;border-radius:9px;font-size:13px;z-index:80;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+
+  @media (max-width:820px){
+    body{overflow:auto;height:auto}
+    .book{grid-template-columns:1fr;grid-template-rows:auto 60vh}
+    .left{border-right:none;border-bottom:1px solid var(--line);max-height:50vh}
+    .typing{padding:22px 18px 72px}
+    .thead{padding:12px 18px 10px}
+    .mbody{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+    .msets{max-height:200px;border-right:none;border-bottom:1px solid var(--line)}
+    .erow,.erow.du-title{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+    판례암기장
+  </div>
+  <div class="loader">
+    <button class="btn" id="setBtn">판례리스트 불러오기 <span class="badge" id="setCount"></span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+    <div class="menu" id="setMenu" hidden></div>
+  </div>
+  <div class="opts">
+    <label><input type="checkbox" id="optPunct" checked> 문장부호 무시</label>
+    <label><input type="checkbox" id="optHide"> 원문 가리기</label>
+    <label><input type="checkbox" id="optGhost" checked> 첫 어절 미리보기</label>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn" id="trashBtn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+    휴지통 <span class="badge" id="trashCount">0</span></button>
+  <button class="btn primary" id="manageBtn">판례리스트 관리</button>
+</header>
+
+<main class="book">
+  <section class="left">
+    <div class="search">
+      <label for="topicInput">검색</label>
+      <div class="sbox">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8e8ca3" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="topicInput" placeholder="주제·제목·두문자·본문으로 검색 (예: 소정근로의)" autocomplete="off">
+      </div>
+    </div>
+    <div class="info" id="matchInfo"></div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <section class="right" id="right">
+    <div class="thead" id="thead"></div>
+    <div class="typing" id="typing"><span id="committed"></span><span class="curwrap"><span class="ghost" id="ghost"></span><input id="cur" autocomplete="off" spellcheck="false" aria-label="판례 입력"></span></div>
+    <div class="placeholder" id="ph">왼쪽에서 판례를 고르면<br>여기서 바로 타이핑을 시작합니다.</div>
+    <div class="status" id="status"></div>
+    <aside class="drawer" id="drawer" aria-label="암기 팁">
+      <div class="dhead">
+        <div style="flex:1;min-width:0"><div class="dt" id="dTitle">암기 팁</div><div class="ds" id="dSub"></div></div>
+        <button class="btn sm" id="dRe">다시 분석</button><button class="btn sm" id="dClose">닫기</button>
+      </div>
+      <div class="dbody" id="dBody"></div>
+    </aside>
+  </section>
+</main>
+
+<!-- 판례리스트 관리 -->
+<div class="modal-bg" id="modal" hidden>
+  <div class="modal">
+    <div class="mhead"><b>판례리스트 관리</b><div class="spacer"></div><button class="btn" id="mclose">닫기</button></div>
+    <div class="mbody">
+      <aside class="msets">
+        <div class="msearch"><div class="sbox">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8e8ca3" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="mSearch" placeholder="판례 검색 (본문 포함)" autocomplete="off"></div></div>
+        <div class="mlabel">세트 · 주제</div>
+        <div id="msetList"></div>
+        <button class="btn add" id="addSet" style="margin-top:6px">+ 새 세트</button>
+        <div class="msep"></div>
+        <div class="mset" id="trashNav">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          휴지통<span class="n" id="trashNavCount"></span></div>
+      </aside>
+      <div class="medit" id="medit"></div>
+    </div>
+    <div class="pastebox" id="pastebox" hidden>
+      <textarea id="pasteArea" placeholder='[{"name":"노동법","topics":[{"name":"통상임금","items":[{"두문자":"...","제목":"...","원문":"..."}]}]}]'></textarea>
+      <div style="display:flex;flex-direction:column;gap:6px"><button class="btn primary" id="pasteApply">가져오기</button><button class="btn" id="pasteCancel">취소</button></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn" id="exportBtn">전체 JSON 복사</button>
+      <button class="btn" id="pasteBtn">JSON 붙여넣어 가져오기</button>
+      <label class="btn">JSON 파일 가져오기<input type="file" id="importFile" accept=".json,application/json" hidden></label>
+      <div class="spacer"></div>
+      <span class="note">변경 내용은 이 브라우저에 자동 저장됩니다</span>
+    </div>
+  </div>
+</div>
+
+<!-- 판례 추가·수정 화면 -->
+<div class="modal-bg" id="editor" hidden style="z-index:60">
+  <div class="ebox">
+    <div class="mhead"><b id="edHead">새 판례 추가</b><div class="spacer"></div><button class="btn" id="edX">닫기</button></div>
+    <div class="ebody">
+      <div class="erow">
+        <div class="fld"><label for="edSet">세트</label><select id="edSet"></select></div>
+        <div class="fld"><label for="edTopic">주제</label><select id="edTopic"></select></div>
+      </div>
+      <div class="erow du-title">
+        <div class="fld"><label for="edDu">두문자</label><input id="edDu" placeholder="예: 소·정·일"></div>
+        <div class="fld"><label for="edTitle">제목</label><input id="edTitle" placeholder="예: 통상임금의 개념"></div>
+      </div>
+      <div>
+        <div class="lab-row"><span class="flabel">판례원문</span><span id="edOcrWrap"></span></div>
+        <textarea id="edText" placeholder="판례원문을 직접 입력하거나, 사진에서 추출한 뒤 고쳐 쓰세요"></textarea>
+      </div>
+    </div>
+    <div class="mfoot" id="edFoot"></div>
+  </div>
+  <input type="file" id="ocrFile" accept="image/*" multiple hidden>
+  <input type="file" id="ocrCam" accept="image/*" capture="environment" hidden>
+</div>
+
+<!-- 사진 자르기 -->
+<div class="modal-bg" id="cropper" hidden style="z-index:62">
+  <div class="ebox crop-box">
+    <div class="mhead"><b>판례 부분만 남기기</b><span class="note" id="cropStep"></span><div class="spacer"></div><button class="btn" id="cropCancel">취소</button></div>
+    <div class="crop-hint">판례 부분만 네모 안에 들어오도록 모서리나 테두리를 끌어 조정하세요. 네모 바깥을 드래그하면 새로 그릴 수 있어요. 네모 밖의 글자는 추출하지 않습니다.</div>
+    <div class="crop-stage"><div class="crop-wrap" id="cropWrap">
+      <div class="crop-rect" id="cropRect"><span class="h" data-d="nw"></span><span class="h" data-d="n"></span><span class="h" data-d="ne"></span><span class="h" data-d="e"></span><span class="h" data-d="se"></span><span class="h" data-d="s"></span><span class="h" data-d="sw"></span><span class="h" data-d="w"></span></div>
+    </div></div>
+    <div class="mfoot">
+      <button class="btn" id="cropRotate">↻ 90° 회전</button>
+      <button class="btn" id="cropAll">전체 선택</button>
+      <div class="spacer"></div>
+      <button class="btn primary" id="cropOk">이 영역으로 추출</button>
+    </div>
+  </div>
+</div>
+
+<!-- 이름 입력 팝업 -->
+<div class="modal-bg" id="namer" hidden style="z-index:65">
+  <div class="cbox">
+    <h3 id="nTitle"></h3>
+    <input id="nInput" class="ninput" autocomplete="off">
+    <div class="cbtns"><button class="btn" id="nNo">취소</button><button class="btn primary" id="nYes" disabled>만들기</button></div>
+  </div>
+</div>
+
+<!-- 확인 팝업 -->
+<div class="modal-bg" id="confirm" hidden style="z-index:70">
+  <div class="cbox" role="alertdialog" aria-modal="true" aria-labelledby="ctitle">
+    <h3 id="ctitle"></h3>
+    <p id="cmsg"></p>
+    <div class="cbtns"><button class="btn" id="cno">취소</button><button class="btn dangerfill" id="cyes">삭제</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const uid = () => Math.random().toString(36).slice(2,9);
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const KEY = 'panrye-amgijang-v1';
+  const TRASH_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>';
+  const CHEV = '<svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>';
+  const BULB = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>';
+  const GCHEV = '<svg class="gchev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>';
+  const CAM = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+
+  // ---------- 데이터: 세트 › 주제 › 판례 ----------
+  const T = (name, items) => ({ id: uid(), name, items: items.map(([du, title, text]) => ({ id: uid(), du, title, text })) });
+  const SAMPLE = [
+    { id: uid(), name: '노동법 (예시)', topics: [
+      T('통상임금', [
+        ['소·정·일', '통상임금의 개념', '통상임금은 소정근로의 대가로 근로자에게 지급되는 금품으로서, 근로자가 소정근로를 온전하게 제공하면 그 대가로 정기적, 일률적으로 지급하기로 정한 임금을 말한다.'],
+        ['객관·조건X', '통상임금 판단기준', '어떠한 임금이 통상임금에 해당하는지는 그 명칭이 아닌 임금의 객관적 성질에 따라 판단하여야 하며, 임금에 부가된 조건의 존부나 성취 가능성은 통상임금 해당 여부를 판단하는 기준으로 작용할 수 없다.']
+      ]),
+      T('부당해고', [
+        ['정·계·폐', '구제이익', '근로자가 부당해고 구제신청을 하여 해고의 효력을 다투던 중 정년에 이르거나 근로계약기간 만료, 폐업 등의 사유로 원직에 복직하는 것이 불가능하게 된 경우에도 해고기간 중의 임금 상당액을 지급받을 필요가 있다면 임금 상당액 지급의 구제명령을 받을 이익이 유지되므로 구제신청을 기각한 중앙노동위원회의 재심판정을 다툴 소의 이익이 있다.']
+      ])
+    ]},
+    { id: uid(), name: '행정쟁송법 (예시)', topics: [
+      T('대상적격', [
+        ['공·구·직', '처분성 일반론', '항고소송의 대상이 되는 행정처분이란 행정청이 공권력의 주체로서 행하는 구체적 사실에 관한 법집행으로서 국민의 구체적인 권리의무에 직접적인 변동을 초래하는 행위를 말한다.']
+      ]),
+      T('원고적격', [
+        ['제3자·법률상', '제3자의 원고적격', '행정처분의 직접 상대방이 아닌 제3자라도 당해 처분으로 인하여 법률상 보호되는 이익을 침해당한 경우에는 그 처분의 취소나 무효확인을 구하는 행정소송을 제기하여 그 당부의 판단을 받을 자격이 있다.']
+      ])
+    ]}
+  ];
+
+  // 예전 형식(세트 › 판례)도 읽어서 '기타' 주제로 옮김
+  function migItem(it){ it = it || {}; return { id: it.id || uid(), du: it.du ?? it['두문자'] ?? '', title: it.title ?? it.topic ?? it['제목'] ?? it['주제'] ?? '', text: it.text ?? it['원문'] ?? it['판례'] ?? '' }; }
+  function migTopic(t){ return { id: t.id || uid(), name: t.name ?? t['주제'] ?? '', items: (t.items || []).map(migItem).filter(it => (it.du + it.title + it.text).trim()) }; }
+  function migSet(st){
+    st = st || {};
+    if(Array.isArray(st.topics)) return { id: st.id || uid(), name: st.name ?? '', topics: st.topics.map(migTopic) };
+    const items = (st.items || []).map(migItem).filter(it => (it.du + it.title + it.text).trim());
+    return { id: st.id || uid(), name: st.name ?? '', topics: items.length ? [{ id: uid(), name: '기타', items }] : [] };
+  }
+  function loadState(){
+    try{
+      const s = JSON.parse(localStorage.getItem(KEY));
+      if(s && Array.isArray(s.sets)){
+        s.sets = s.sets.map(migSet);
+        s.loaded = Array.isArray(s.loaded) ? s.loaded : s.sets.map(x => x.id);
+        s.trash = (Array.isArray(s.trash) ? s.trash : []).map(t => {
+          if(t.type === 'set') t.set = migSet(t.set);
+          else if(t.type === 'topic') t.topic = migTopic(t.topic);
+          else if(t.item) t.item = migItem(t.item);
+          return t;
+        });
+        if(!s.progress || typeof s.progress !== 'object') s.progress = {};
+        if(!s.analysis || typeof s.analysis !== 'object') s.analysis = {};
+        return s;
+      }
+    }catch(e){}
+    return { sets: SAMPLE, loaded: SAMPLE.map(s => s.id), trash: [], progress: {}, analysis: {} };
+  }
+  let state = loadState();
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+  const setCount = s => s.topics.reduce((n, t) => n + t.items.length, 0);
+  function flatItems(onlyLoaded){
+    const out = [];
+    state.sets.forEach(s => { if(onlyLoaded && !state.loaded.includes(s.id)) return;
+      s.topics.forEach(t => t.items.forEach(it => out.push({ ...it, setId: s.id, setName: s.name, topicId: t.id, topicName: t.name }))); });
+    return out;
+  }
+  function findLoc(id){
+    for(const s of state.sets) for(const t of s.topics){ const it = t.items.find(x => x.id === id); if(it) return { set: s, topic: t, item: it }; }
+    return null;
+  }
+
+  // ---------- 검색 (본문 포함, 띄어쓰기 무시) ----------
+  function makeRe(q){
+    const chars = [...String(q || '').replace(/\s+/g, '')];
+    if(!chars.length) return null;
+    return new RegExp(chars.map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s*'), 'i');
+  }
+  function hl(text, re){
+    text = String(text || ''); if(!re) return esc(text);
+    const g = new RegExp(re.source, 'gi'); let out = '', last = 0, m;
+    while((m = g.exec(text))){ if(!m[0].length){ g.lastIndex++; continue; } out += esc(text.slice(last, m.index)) + '<mark>' + esc(m[0]) + '</mark>'; last = m.index + m[0].length; }
+    return out + esc(text.slice(last));
+  }
+  function snippet(text, re){
+    const m = re && re.exec(text || ''); if(!m) return '';
+    const st = Math.max(0, m.index - 20), en = Math.min(text.length, m.index + m[0].length + 34);
+    return (st > 0 ? '…' : '') + hl(text.slice(st, en), re) + (en < text.length ? '…' : '');
+  }
+  const hit = (it, re) => !re || [it.title, it.du, it.topicName, it.text].some(v => re.test(v || ''));
+
+  let activeId = null, openId = null, matches = [];
+  const collapsed = new Set();
+
+  function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 1900); }
+  function refreshCounts(){
+    $('#setCount').textContent = `${state.loaded.length}/${state.sets.length}`;
+    $('#trashCount').textContent = state.trash.length;
+    $('#trashNavCount').textContent = state.trash.length || '';
+  }
+
+  // ---------- 판례리스트 불러오기 ----------
+  const setBtn = $('#setBtn'), setMenu = $('#setMenu');
+  function renderSetMenu(){
+    refreshCounts();
+    setMenu.innerHTML = state.sets.length ? state.sets.map(s => `
+      <label><input type="checkbox" data-id="${s.id}" ${state.loaded.includes(s.id)?'checked':''}>
+      <span>${esc(s.name||'이름 없는 세트')}</span><span class="cnt">주제 ${s.topics.length} · 판례 ${setCount(s)}</span></label>`).join('')
+      : '<div style="padding:10px;color:var(--ink3)">판례리스트가 없습니다. 관리에서 추가하세요.</div>';
+  }
+  setBtn.addEventListener('click', e => { e.stopPropagation(); setMenu.hidden = !setMenu.hidden; });
+  document.addEventListener('click', e => { if(!setMenu.contains(e.target) && !setBtn.contains(e.target)) setMenu.hidden = true; });
+  setMenu.addEventListener('change', e => {
+    const id = e.target.dataset.id; if(!id) return;
+    state.loaded = e.target.checked ? [...new Set([...state.loaded, id])] : state.loaded.filter(x => x !== id);
+    save(); renderSetMenu(); renderLeft();
+  });
+
+  // ---------- 왼쪽: 세트 › 주제 › 판례 ----------
+  const topicInput = $('#topicInput');
+  function splitWords(t){ return String(t||'').trim().split(/\s+/).filter(Boolean); }
+  function progLabel(it){
+    const p = state.progress[it.id]; if(!p || !p.results.length) return '';
+    const n = splitWords(it.text).length;
+    return `<span class="prog">${Math.min(p.results.length, n)}/${n}</span>`;
+  }
+  function renderLeft(){
+    const all = flatItems(true).filter(it => it.text.trim());
+    const q = topicInput.value.trim(); const re = makeRe(q);
+    matches = all.filter(it => hit(it, re));
+    const info = $('#matchInfo');
+    if(!all.length) info.textContent = '불러온 판례가 없습니다. 상단에서 판례리스트를 불러오세요.';
+    else if(!re) info.textContent = `불러온 판례 ${all.length}건 · 판례를 누르면 원문이 펼쳐집니다`;
+    else info.textContent = matches.length ? `'${q}' 검색 결과 ${matches.length}건 (본문 포함)` : `'${q}'와 일치하는 판례가 없습니다`;
+
+    if(!matches.find(m => m.id === activeId)) setActive(matches[0] ? matches[0].id : null);
+
+    // 세트 › 주제로 묶기 (순서 유지)
+    const groups = [];
+    matches.forEach(it => {
+      let g = groups.find(x => x.id === it.setId); if(!g){ g = { id: it.setId, name: it.setName, topics: [] }; groups.push(g); }
+      let t = g.topics.find(x => x.id === it.topicId); if(!t){ t = { id: it.topicId, name: it.topicName, items: [] }; g.topics.push(t); }
+      t.items.push(it);
+    });
+    renderThead();
+    const isClosed = k => !re && collapsed.has(k);
+    $('#list').innerHTML = groups.length ? groups.map(g => `
+      <div class="grp grp-set ${isClosed(g.id)?'closed':''}">
+        <button class="gh set" data-key="${g.id}">${GCHEV}${esc(g.name || '이름 없는 세트')}<span class="n">${g.topics.reduce((n,t)=>n+t.items.length,0)}</span></button>
+        <div class="grp-body">${g.topics.map(t => `
+          <div class="grp grp-topic ${isClosed(t.id)?'closed':''}">
+            <button class="gh topic" data-key="${t.id}">${GCHEV}${hl(t.name || '이름 없는 주제', re)}<span class="n">${t.items.length}</span></button>
+            <div class="grp-body">${t.items.map(it => {
+              const bodyHit = re && !re.test(it.title || '') && !re.test(it.du || '') && !re.test(it.topicName || '') && re.test(it.text || '');
+              return `
+              <div class="item ${it.id===activeId?'active':''} ${it.id===openId?'open':''}" data-id="${it.id}">
+                <button class="item-head">
+                  <span class="du">${hl(it.du || '—', re)}</span>
+                  <span class="title">${hl(it.title || '(제목 없음)', re)}</span>
+                  ${progLabel(it)}
+                  ${it.id===activeId ? '<span class="now">입력 중</span>' : ''}
+                  ${CHEV}
+                </button>
+                ${bodyHit ? `<div class="snip">${snippet(it.text, re)}</div>` : ''}
+                <div class="item-body">
+                  ${it.text.trim() ? `<div class="orig">${hl(it.text, re)}</div>` : '<div class="orig none">판례원문이 없습니다</div>'}
+                  <div class="item-foot" style="gap:6px"><button class="btn sm tip-left">${BULB} 암기 팁</button><button class="btn sm danger del-left">${TRASH_ICON} 이 판례 삭제</button></div>
+                </div>
+              </div>`; }).join('')}</div>
+          </div>`).join('')}</div>
+      </div>`).join('') : `<div class="empty">${all.length ? '일치하는 판례가 없습니다.' : ''}</div>`;
+  }
+  topicInput.addEventListener('input', renderLeft);
+  topicInput.addEventListener('keydown', e => { if(e.key === 'Enter' && !e.isComposing && activeId){ e.preventDefault(); cur.focus(); } });
+  $('#list').addEventListener('click', e => {
+    const d = e.target.closest('.del-left'); if(d){ deleteItem(d.closest('.item').dataset.id); return; }
+    const tp = e.target.closest('.tip-left'); if(tp){ const id = tp.closest('.item').dataset.id; setActive(id); renderLeft(); openTips(id); return; }
+    const g = e.target.closest('.gh');
+    if(g){ if(topicInput.value.trim()) return; const k = g.dataset.key; collapsed.has(k) ? collapsed.delete(k) : collapsed.add(k); renderLeft(); return; }
+    const h = e.target.closest('.item-head'); if(!h) return;
+    const id = h.parentElement.dataset.id;
+    openId = (openId === id) ? null : id;
+    setActive(id); renderLeft();
+  });
+  $('#optHide').addEventListener('change', e => document.body.classList.toggle('hide-orig', e.target.checked));
+
+  // ---------- 오른쪽: 타이핑 비교 ----------
+  const cur = $('#cur'), committed = $('#committed');
+  let words = [], results = [], pendingEnter = false;
+  const PUNCT = /[.,·ㆍ:;!?"'“”‘’「」『』()\[\]〈〉《》<>~\-–—…]/g;
+  const norm = w => { w = w.normalize('NFC'); return $('#optPunct').checked ? w.replace(PUNCT,'') : w; };
+
+  function persist(){
+    if(!activeId) return;
+    if(results.length || cur.value) state.progress[activeId] = { results: results.map(r => ({ typed: r.typed })), cur: cur.value };
+    else delete state.progress[activeId];
+    save();
+  }
+  function setActive(id){
+    if(id === activeId) return;
+    activeId = id;
+    const loc = id && findLoc(id);
+    words = loc ? splitWords(loc.item.text) : [];
+    const p = id && state.progress[id];
+    results = p ? p.results.map((r, i) => ({ typed: r.typed, target: words[i] ?? null, ok: words[i] != null && norm(r.typed) === norm(words[i]) })) : [];
+    cur.value = p ? (p.cur || '') : '';
+    renderTyping();
+    if(drawerId && id){ drawerId = id; renderTips(); }
+    else if(drawerId && !id) closeTips();
+  }
+  // 입력창 맨 위: 두문자 · 주제 › 제목
+  function renderThead(){
+    const loc = activeId && findLoc(activeId);
+    $('#thead').innerHTML = loc ? `<span class="du">${esc(loc.item.du || '—')}</span><span class="tt-topic">${esc(loc.topic.name || '이름 없는 주제')}</span>`
+      + (loc.item.title ? `<span class="tt-sep">›</span><span class="tt-title">${esc(loc.item.title)}</span>` : '') : '';
+  }
+  function resetActive(){ const id = activeId; activeId = null; setActive(id); }
+  function commit(t){
+    const target = words[results.length];
+    results.push({ typed: t, target: target ?? null, ok: target != null && norm(t) === norm(target) });
+  }
+  function commitCur(){ const v = cur.value.trim(); if(v){ commit(v); cur.value=''; renderTyping(); } }
+  function processInput(){
+    const v = cur.value;
+    if(/\s/.test(v)){
+      const parts = v.split(/\s+/); const last = parts.pop();
+      parts.forEach(p => { if(p) commit(p); });
+      cur.value = last; renderTyping();
+    }
+    sizeInput();
+  }
+  // 첫 어절을 회색으로 미리 보여주고, 그 위에 따라 쓰면 검은 글자로 덮임
+  function ghostText(){ return ($('#optGhost').checked && activeId && results.length === 0 && words[0]) ? words[0] : ''; }
+  function sizeInput(){
+    const g = ghostText(); $('#ghost').textContent = g;
+    cur.style.width = (Math.max(1, [...cur.value].length, [...g].length) + 1.2) + 'em';
+  }
+
+  cur.addEventListener('input', e => { if(e.isComposing){ sizeInput(); return; } processInput(); persist(); });
+  cur.addEventListener('compositionend', () => setTimeout(() => { processInput(); if(pendingEnter){ pendingEnter=false; commitCur(); } persist(); }, 0));
+  cur.addEventListener('keydown', e => {
+    if(e.key === 'Enter'){ e.preventDefault(); if(e.isComposing){ pendingEnter = true; return; } commitCur(); }
+    else if(e.key === 'Backspace' && cur.value === '' && !e.isComposing && results.length){
+      e.preventDefault();
+      const r = results.pop(); cur.value = r.typed; renderTyping();
+      const n = cur.value.length; cur.setSelectionRange(n, n);
+    }
+  });
+  $('#right').addEventListener('click', e => { if(!e.target.closest('button') && !e.target.closest('.drawer')) cur.focus(); });
+
+  const DEL_BTN = `<button class="btn sm danger" id="delActive" title="이 판례 삭제">${TRASH_ICON}</button>`;
+  function renderTyping(){
+    committed.innerHTML = results.map(r => r.ok
+      ? `<span class="w ok">${esc(r.typed)}</span>`
+      : `<span class="w bad"><s>${esc(r.typed)}</s>${r.target != null ? `<span class="hint">${esc(r.target)}</span>` : ''}</span>`
+    ).join('');
+    sizeInput(); persist(); renderThead();
+    $('#ph').style.display = activeId ? 'none' : 'flex';
+    cur.disabled = !activeId;
+    const st = $('#status');
+    if(!activeId){ st.innerHTML = ''; return; }
+    const wrong = results.filter(r => !r.ok).length;
+    if(words.length && results.length >= words.length){
+      const correct = results.slice(0, words.length).filter(r => r.ok).length;
+      st.innerHTML = `<span class="done">완료 · 정확도 ${Math.round(correct / words.length * 100)}%</span><span>오답 ${wrong}</span>
+        <button class="btn sm" id="tipBtn">${BULB} 암기 팁</button><button class="btn sm" id="retry">새로 쓰기</button><button class="btn sm primary" id="next">다음 판례</button>${DEL_BTN}`;
+      $('#next').onclick = () => {
+        const i = matches.findIndex(m => m.id === activeId);
+        const nx = matches[(i + 1) % matches.length];
+        if(nx.id === activeId){ results=[]; cur.value=''; renderTyping(); }
+        else { if(openId) openId = nx.id; setActive(nx.id); }
+        renderLeft(); cur.focus();
+      };
+    } else {
+      st.innerHTML = `<span><b>${Math.min(results.length, words.length)}</b> / ${words.length} 어절</span><span>오답 <b>${wrong}</b></span><span class="keyhint">스페이스 채점 · 백스페이스 이전 어절 수정</span>
+        <button class="btn sm" id="tipBtn">${BULB} 암기 팁</button><button class="btn sm" id="retry">새로 쓰기</button>${DEL_BTN}`;
+    }
+    $('#tipBtn').onclick = () => drawerId === activeId ? closeTips() : openTips(activeId);
+    $('#retry').onclick = () => { results=[]; cur.value=''; renderTyping(); renderLeft(); cur.focus(); toast('입력 내용을 지웠습니다'); };
+    $('#delActive').onclick = () => deleteItem(activeId);
+    const t = $('#typing'); t.scrollTop = t.scrollHeight;
+  }
+  $('#optGhost').addEventListener('change', () => { renderTyping(); cur.focus(); });
+  $('#optPunct').addEventListener('change', () => {
+    results = results.map(r => ({...r, ok: r.target != null && norm(r.typed) === norm(r.target)})); renderTyping();
+  });
+
+  // ---------- 확인 팝업 ----------
+  const cdlg = $('#confirm'); let cAction = null;
+  function askConfirm(title, msg, okLabel, onOk, danger = true){
+    $('#ctitle').textContent = title; $('#cmsg').textContent = msg;
+    const y = $('#cyes'); y.textContent = okLabel; y.className = 'btn ' + (danger ? 'dangerfill' : 'primary');
+    cAction = onOk; cdlg.hidden = false; $('#cno').focus();
+  }
+  function closeConfirm(){ cdlg.hidden = true; cAction = null; }
+  $('#cno').onclick = closeConfirm;
+  $('#cyes').onclick = () => { const f = cAction; closeConfirm(); if(f) f(); };
+  cdlg.addEventListener('click', e => { if(e.target === cdlg) closeConfirm(); });
+
+  // ---------- 삭제 → 휴지통 ----------
+  function refreshAll(){ renderSetMenu(); renderLeft(); if(!modal.hidden) renderModal(); }
+  function dropProgress(items){ items.forEach(it => { delete state.progress[it.id]; delete state.analysis[it.id]; }); }
+  function deleteItem(id){
+    const loc = findLoc(id); if(!loc) return;
+    const { set, topic, item } = loc;
+    askConfirm('판례를 삭제할까요?', `'${item.title || '제목 없음'}' 판례를 ${set.name || '세트'} › ${topic.name || '주제'}에서 휴지통으로 옮깁니다. 휴지통에서 복원할 수 있어요.`, '삭제', () => {
+      state.trash.push({ tid: uid(), type: 'item', item, setId: set.id, setName: set.name, topicId: topic.id, topicName: topic.name, deletedAt: Date.now() });
+      topic.items = topic.items.filter(x => x.id !== id);
+      if(openId === id) openId = null;
+      if(!editor.hidden && ed.id === id) closeEditor(true);
+      save(); refreshAll(); toast('휴지통으로 옮겼습니다');
+    });
+  }
+
+  // ---------- 판례리스트 관리 ----------
+  const modal = $('#modal');
+  let view = { kind: 'set', setId: null, topicId: null };
+  const mSearch = $('#mSearch');
+  function validView(){
+    if(view.kind === 'trash') return;
+    const s = state.sets.find(x => x.id === view.setId);
+    if(!s){ view = state.sets[0] ? { kind: 'set', setId: state.sets[0].id } : { kind: 'trash' }; return; }
+    if(view.kind === 'topic' && !s.topics.find(t => t.id === view.topicId)) view = { kind: 'set', setId: s.id };
+  }
+  function openModal(target){
+    if(target) view = target;
+    validView(); renderModal(); modal.hidden = false;
+  }
+  function closeModal(){ modal.hidden = true; $('#pastebox').hidden = true; renderSetMenu(); renderLeft(); }
+  $('#manageBtn').onclick = () => { if(view.kind === 'trash') view = { kind: 'set', setId: state.sets[0]?.id }; openModal(); };
+  $('#trashBtn').onclick = () => { mSearch.value = ''; openModal({ kind: 'trash' }); };
+  $('#mclose').onclick = closeModal;
+  modal.addEventListener('click', e => { if(e.target === modal) closeModal(); });
+  mSearch.addEventListener('input', () => renderModal());
+
+  function fmtTime(ts){ const d = new Date(ts); const p = n => String(n).padStart(2,'0'); return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+
+  function renderModal(){
+    refreshCounts(); validView();
+    const searching = !!mSearch.value.trim();
+    $('#msetList').innerHTML = state.sets.map(s => {
+      const exp = view.setId === s.id && view.kind !== 'trash';
+      const sel = !searching && view.kind === 'set' && view.setId === s.id;
+      return `<div class="mset ${sel?'sel':''} ${exp?'expanded':''}" data-set="${s.id}">${GCHEV}<span>${esc(s.name||'이름 없는 세트')}</span><span class="n">${setCount(s)}</span></div>`
+        + (exp ? s.topics.map(t => `<div class="mset lvl2 ${!searching && view.kind==='topic' && view.topicId===t.id?'sel':''}" data-set="${s.id}" data-topic="${t.id}"><span>${esc(t.name||'이름 없는 주제')}</span><span class="n">${t.items.length}</span></div>`).join('')
+          + `<div class="mset lvl2 addtopic" data-addtopic="${s.id}">+ 주제 추가</div>` : '');
+    }).join('') || '<div class="note" style="padding:6px 10px">세트가 없습니다</div>';
+    $('#trashNav').classList.toggle('sel', !searching && view.kind === 'trash');
+    const ed = $('#medit');
+    if(searching) return renderSearch(ed);
+    if(view.kind === 'trash') return renderTrash(ed);
+    const s = state.sets.find(x => x.id === view.setId);
+    if(!s){ ed.innerHTML = '<div class="empty">왼쪽에서 세트를 고르거나 새 세트를 만드세요.</div>'; return; }
+
+    if(view.kind === 'set'){
+      ed.innerHTML = `
+        <div class="sethead"><input id="setName" value="${esc(s.name)}" placeholder="세트 이름"><button class="btn danger" id="delSet">${TRASH_ICON} 세트 삭제</button></div>
+        <div class="subinfo">주제 ${s.topics.length}개 · 판례 ${setCount(s)}건</div>
+        <div class="bar"><span class="lbl">주제</span><div class="spacer"></div><button class="btn primary" id="addTopicBtn">+ 주제 추가</button></div>
+        ${s.topics.map(t => `
+          <div class="lrow" data-topic="${t.id}"><span class="tname">${esc(t.name || '이름 없는 주제')}</span><span class="loc">판례 ${t.items.length}건</span>${CHEV}</div>`).join('')
+          || '<div class="empty" style="padding:24px">아직 주제가 없습니다. 주제를 추가한 뒤 그 안에 판례를 넣으세요.</div>'}`;
+      return;
+    }
+    const t = s.topics.find(x => x.id === view.topicId);
+    ed.innerHTML = `
+      <div class="crumb"><a data-goset="${s.id}">${esc(s.name || '이름 없는 세트')}</a> ›</div>
+      <div class="sethead"><input id="topicName" value="${esc(t.name)}" placeholder="주제 이름"><button class="btn danger" id="delTopic">${TRASH_ICON} 주제 삭제</button></div>
+      <div class="subinfo">판례 ${t.items.length}건 · 판례를 누르면 수정할 수 있어요</div>
+      <div class="bar"><span class="lbl">등록된 판례</span><div class="spacer"></div><button class="btn primary" id="addItemBtn">+ 판례 추가하기</button></div>
+      ${t.items.map((it, i) => `
+        <div class="lrow" data-item="${it.id}">
+          <span class="num">${i + 1}</span><span class="du">${esc(it.du || '—')}</span>
+          <span class="title">${esc(it.title || '(제목 없음)')}</span>
+          <span class="lprev">${esc(it.text || '판례원문 없음')}</span>${CHEV}
+        </div>`).join('') || '<div class="empty" style="padding:24px">아직 등록된 판례가 없습니다.<br>오른쪽 위 ‘판례 추가하기’를 눌러 추가하세요.</div>'}`;
+  }
+
+  function renderSearch(ed){
+    const q = mSearch.value.trim(), re = makeRe(q);
+    const res = flatItems(false).filter(it => hit(it, re));
+    ed.innerHTML = `
+      <div class="sethead"><div class="ttl">검색 결과</div><button class="btn" id="clearSearch">검색 지우기</button></div>
+      <div class="subinfo">'${esc(q)}' · ${res.length}건 (제목·주제·두문자·본문)</div>
+      ${res.map(it => `
+        <div class="lrow srow" data-item="${it.id}">
+          <div class="top1"><span class="du">${hl(it.du || '—', re)}</span><span class="title">${hl(it.title || '(제목 없음)', re)}</span>
+            <span class="spacer"></span><span class="loc">${esc(it.setName)} › ${hl(it.topicName, re)}</span></div>
+          ${re.test(it.text || '') ? `<div class="snip">${snippet(it.text, re)}</div>` : ''}
+        </div>`).join('') || '<div class="empty">일치하는 판례가 없습니다.</div>'}`;
+  }
+
+  function renderTrash(ed){
+    const list = [...state.trash].sort((a,b) => b.deletedAt - a.deletedAt);
+    ed.innerHTML = `
+      <div class="sethead"><div class="ttl">휴지통</div>
+        ${list.length ? `<button class="btn danger" id="emptyTrash">${TRASH_ICON} 휴지통 비우기</button>` : ''}</div>
+      <div class="subinfo">삭제한 세트·주제·판례가 여기 보관됩니다. 복원하면 원래 자리로 돌아갑니다.</div>
+      ${list.length ? list.map(t => {
+        let kind, name, meta;
+        if(t.type === 'set'){ kind = '세트'; name = t.set.name || '이름 없는 세트'; meta = `주제 ${t.set.topics.length}개 · 판례 ${setCount(t.set)}건`; }
+        else if(t.type === 'topic'){ kind = '주제'; name = t.topic.name || '이름 없는 주제'; meta = `${t.setName || '세트'} › · 판례 ${t.topic.items.length}건`; }
+        else { kind = '판례'; name = `${t.item.du ? t.item.du + ' · ' : ''}${t.item.title || '(제목 없음)'}`; meta = `${t.setName || '세트'} › ${t.topicName || '기타'}`; }
+        return `<div class="trow" data-tid="${t.tid}">
+          <span class="ttype ${t.type === 'set' ? 'set' : t.type === 'topic' ? 'topic' : 'item'}">${kind}</span>
+          <div class="tmain"><div class="tname2">${esc(name)}</div><div class="tmeta">${esc(meta)} · ${fmtTime(t.deletedAt)} 삭제</div></div>
+          <button class="btn sm restore">복원</button>
+          <button class="btn sm danger purge">영구 삭제</button>
+        </div>`;
+      }).join('') : '<div class="empty">휴지통이 비어 있습니다.</div>'}`;
+  }
+
+  // 사이드바
+  $('#msetList').addEventListener('click', e => {
+    const m = e.target.closest('.mset'); if(!m) return;
+    mSearch.value = '';
+    if(m.dataset.addtopic){ addTopic(m.dataset.addtopic); return; }
+    view = m.dataset.topic ? { kind: 'topic', setId: m.dataset.set, topicId: m.dataset.topic } : { kind: 'set', setId: m.dataset.set };
+    renderModal();
+  });
+  $('#trashNav').onclick = () => { mSearch.value = ''; view = { kind: 'trash' }; renderModal(); };
+  // 이름을 입력해야만 세트·주제가 만들어짐
+  const namer = $('#namer'); let nAction = null;
+  function askName(title, placeholder, onOk){
+    $('#nTitle').textContent = title; const i = $('#nInput'); i.value = ''; i.placeholder = placeholder;
+    $('#nYes').disabled = true; nAction = onOk; namer.hidden = false; i.focus();
+  }
+  function closeNamer(){ namer.hidden = true; nAction = null; }
+  $('#nInput').addEventListener('input', e => { $('#nYes').disabled = !e.target.value.trim(); });
+  $('#nInput').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.isComposing){ e.preventDefault(); $('#nYes').click(); } });
+  $('#nNo').onclick = closeNamer;
+  namer.addEventListener('click', e => { if(e.target === namer) closeNamer(); });
+  $('#nYes').onclick = () => { const v = $('#nInput').value.trim(); if(!v) return; const f = nAction; closeNamer(); if(f) f(v); };
+
+  $('#addSet').onclick = () => askName('새 세트 만들기', '예: 노동법', name => {
+    const s = { id: uid(), name, topics: [] };
+    state.sets.push(s); state.loaded.push(s.id); mSearch.value = ''; view = { kind: 'set', setId: s.id }; save(); renderModal(); renderSetMenu();
+  });
+  function addTopic(setId){
+    const s = state.sets.find(x => x.id === setId); if(!s) return;
+    askName(`${s.name || '세트'}에 주제 추가`, '예: 통상임금', name => {
+      const t = { id: uid(), name, items: [] }; s.topics.push(t);
+      view = { kind: 'topic', setId, topicId: t.id }; save(); renderModal();
+    });
+  }
+
+  $('#medit').addEventListener('input', e => {
+    const s = state.sets.find(x => x.id === view.setId);
+    if(e.target.id === 'setName' && s){ s.name = e.target.value; save(); const el = $(`#msetList .mset[data-set="${s.id}"]:not([data-topic]) span`); if(el) el.textContent = s.name || '이름 없는 세트'; }
+    if(e.target.id === 'topicName' && s){ const t = s.topics.find(x => x.id === view.topicId); if(t){ t.name = e.target.value; save(); const el = $(`#msetList .mset[data-topic="${t.id}"] span`); if(el) el.textContent = t.name || '이름 없는 주제'; } }
+  });
+
+  $('#medit').addEventListener('click', e => {
+    if(e.target.closest('#clearSearch')){ mSearch.value = ''; renderModal(); return; }
+    if(e.target.closest('#emptyTrash')){
+      askConfirm('휴지통을 비울까요?', `휴지통의 항목 ${state.trash.length}개가 영구 삭제되며 되돌릴 수 없습니다.`, '비우기', () => {
+        state.trash.forEach(t => dropProgress(trashItems(t))); state.trash = []; save(); renderModal(); toast('휴지통을 비웠습니다');
+      }); return;
+    }
+    const tr = e.target.closest('.trow');
+    if(tr && e.target.closest('.restore')){ restore(tr.dataset.tid); return; }
+    if(tr && e.target.closest('.purge')){
+      const t = state.trash.find(x => x.tid === tr.dataset.tid); if(!t) return;
+      askConfirm('영구 삭제할까요?', '이 항목을 영구 삭제합니다. 되돌릴 수 없습니다.', '영구 삭제', () => {
+        dropProgress(trashItems(t)); state.trash = state.trash.filter(x => x.tid !== t.tid); save(); renderModal(); toast('영구 삭제했습니다');
+      }); return;
+    }
+    const go = e.target.closest('[data-goset]'); if(go){ view = { kind: 'set', setId: go.dataset.goset }; renderModal(); return; }
+    const s = state.sets.find(x => x.id === view.setId);
+    if(e.target.closest('#addTopicBtn')){ addTopic(view.setId); return; }
+    if(e.target.closest('#addItemBtn')){ openEditor({ mode: 'add', setId: view.setId, topicId: view.topicId }); return; }
+    const rt = e.target.closest('.lrow[data-topic]'); if(rt){ view = { kind: 'topic', setId: view.setId, topicId: rt.dataset.topic }; renderModal(); return; }
+    const ri = e.target.closest('.lrow[data-item]'); if(ri){ openEditor({ mode: 'edit', id: ri.dataset.item }); return; }
+    if(e.target.closest('#delSet') && s){
+      askConfirm('세트를 삭제할까요?', `'${s.name || '이름 없는 세트'}' 세트(주제 ${s.topics.length}개, 판례 ${setCount(s)}건)를 휴지통으로 옮깁니다. 휴지통에서 복원할 수 있어요.`, '삭제', () => {
+        state.trash.push({ tid: uid(), type: 'set', set: s, wasLoaded: state.loaded.includes(s.id), deletedAt: Date.now() });
+        state.sets = state.sets.filter(x => x.id !== s.id); state.loaded = state.loaded.filter(x => x !== s.id);
+        view = { kind: 'set', setId: state.sets[0]?.id }; save(); refreshAll(); toast('휴지통으로 옮겼습니다');
+      });
+    }
+    if(e.target.closest('#delTopic') && s){
+      const t = s.topics.find(x => x.id === view.topicId); if(!t) return;
+      askConfirm('주제를 삭제할까요?', `'${t.name || '이름 없는 주제'}' 주제와 그 안의 판례 ${t.items.length}건을 휴지통으로 옮깁니다. 휴지통에서 복원할 수 있어요.`, '삭제', () => {
+        state.trash.push({ tid: uid(), type: 'topic', topic: t, setId: s.id, setName: s.name, deletedAt: Date.now() });
+        s.topics = s.topics.filter(x => x.id !== t.id);
+        view = { kind: 'set', setId: s.id }; save(); refreshAll(); toast('휴지통으로 옮겼습니다');
+      });
+    }
+  });
+
+  function trashItems(t){ return t.type === 'set' ? t.set.topics.flatMap(x => x.items) : t.type === 'topic' ? t.topic.items : [t.item]; }
+  function ensureSet(id, name){
+    let s = state.sets.find(x => x.id === id);
+    if(!s){ s = { id: id || uid(), name: name || '복원된 세트', topics: [] }; state.sets.push(s); if(!state.loaded.includes(s.id)) state.loaded.push(s.id); }
+    return s;
+  }
+  function mergeTopic(s, topic){
+    const ex = s.topics.find(x => x.id === topic.id);
+    if(ex) ex.items.push(...topic.items.filter(it => !ex.items.some(e => e.id === it.id)));
+    else s.topics.push(topic);
+  }
+  function restore(tid){
+    const t = state.trash.find(x => x.tid === tid); if(!t) return;
+    if(t.type === 'set'){
+      const ex = state.sets.find(x => x.id === t.set.id);
+      if(ex) t.set.topics.forEach(tp => mergeTopic(ex, tp));
+      else { state.sets.push(t.set); if(t.wasLoaded !== false && !state.loaded.includes(t.set.id)) state.loaded.push(t.set.id); }
+      toast(`'${t.set.name || '세트'}' 세트를 복원했습니다`);
+    } else if(t.type === 'topic'){
+      const s = ensureSet(t.setId, t.setName); mergeTopic(s, t.topic);
+      toast(`'${t.topic.name || '주제'}' 주제를 복원했습니다`);
+    } else {
+      const s = ensureSet(t.setId, t.setName);
+      let tp = s.topics.find(x => x.id === t.topicId);
+      if(!tp){ tp = { id: t.topicId || uid(), name: t.topicName || '기타', items: [] }; s.topics.push(tp); }
+      tp.items.push(t.item);
+      toast(`${s.name} › ${tp.name}(으)로 복원했습니다`);
+    }
+    state.trash = state.trash.filter(x => x.tid !== tid); save(); refreshAll();
+  }
+
+  // ---------- 판례 추가·수정 화면 ----------
+  const editor = $('#editor');
+  let ed = { mode: 'add', id: null, snap: '' };
+  const edVals = () => JSON.stringify([$('#edSet').value, $('#edTopic').value, $('#edDu').value, $('#edTitle').value, $('#edText').value]);
+  // 새 주제는 판례를 저장할 때 함께 만들어짐 (취소하면 생기지 않음)
+  let pendingTopic = null, prevTopicVal = '';
+  function fillTopics(setId, topicId){
+    const s = state.sets.find(x => x.id === setId);
+    const ts = (s ? s.topics : []).map(t => ({ id: t.id, name: t.name }));
+    if(pendingTopic && pendingTopic.setId === setId) ts.push({ id: pendingTopic.id, name: pendingTopic.name + ' (새 주제)' });
+    $('#edTopic').innerHTML = (ts.length ? ts.map(t => `<option value="${t.id}" ${t.id===topicId?'selected':''}>${esc(t.name || '이름 없는 주제')}</option>`).join('')
+      : '<option value="">(주제 없음 · 저장하면 ‘기타’ 주제가 생겨요)</option>')
+      + '<option value="__new">+ 새 주제 만들기…</option>';
+    prevTopicVal = $('#edTopic').value;
+  }
+  $('#edTopic').addEventListener('change', e => {
+    if(e.target.value !== '__new'){ prevTopicVal = e.target.value; return; }
+    e.target.value = prevTopicVal;
+    const setId = $('#edSet').value, s = state.sets.find(x => x.id === setId);
+    askName(`${s ? s.name : '세트'}에 새 주제 만들기`, '예: 통상임금', name => {
+      const ex = s && s.topics.find(t => t.name === name);
+      if(ex){ fillTopics(setId, ex.id); toast('이미 있는 주제라 그 주제를 골랐어요'); return; }
+      pendingTopic = { id: uid(), setId, name };
+      fillTopics(setId, pendingTopic.id);
+    });
+  });
+  function openEditor(opt){
+    let setId = opt.setId, topicId = opt.topicId, it = null;
+    if(opt.mode === 'edit'){ const loc = findLoc(opt.id); if(!loc) return; it = loc.item; setId = loc.set.id; topicId = loc.topic.id; }
+    ed = { mode: opt.mode, id: it ? it.id : null }; pendingTopic = null;
+    $('#edHead').textContent = opt.mode === 'edit' ? '판례 수정' : '새 판례 추가';
+    $('#edSet').innerHTML = state.sets.map(s => `<option value="${s.id}" ${s.id===setId?'selected':''}>${esc(s.name || '이름 없는 세트')}</option>`).join('');
+    fillTopics($('#edSet').value, topicId);
+    $('#edDu').value = it ? it.du : ''; $('#edTitle').value = it ? it.title : ''; $('#edText').value = it ? it.text : '';
+    $('#edOcrWrap').innerHTML = canImg ? ocrControls() : '<span class="ocr-note">사진 추출은 claude.ai에서 열었을 때 쓸 수 있어요</span>';
+    $('#edFoot').innerHTML = opt.mode === 'edit'
+      ? `<button class="btn danger" id="edDel">${TRASH_ICON} 삭제</button><div class="spacer"></div><button class="btn" id="edCancel">취소</button><button class="btn primary" id="edSave">저장</button>`
+      : `<div class="spacer"></div><button class="btn" id="edCancel">취소</button><button class="btn primary" id="edSave">추가하기</button>`;
+    ed.snap = edVals();
+    editor.hidden = false; (opt.mode === 'edit' ? $('#edText') : $('#edDu')).focus();
+  }
+  function closeEditor(force){
+    if(!force && edVals() !== ed.snap){
+      askConfirm('작성 중인 내용을 버릴까요?', '저장하지 않은 내용은 사라집니다.', '버리기', () => { editor.hidden = true; });
+      return;
+    }
+    editor.hidden = true;
+  }
+  $('#edSet').addEventListener('change', () => fillTopics($('#edSet').value, pendingTopic && pendingTopic.setId === $('#edSet').value ? pendingTopic.id : null));
+  $('#edX').onclick = () => closeEditor();
+  editor.addEventListener('click', e => { if(e.target === editor) closeEditor(); });
+  $('#edFoot').addEventListener('click', e => {
+    if(e.target.closest('#edCancel')) return closeEditor();
+    if(e.target.closest('#edDel')) return deleteItem(ed.id);
+    const more = !!e.target.closest('#edSaveMore');
+    if(!e.target.closest('#edSave') && !more) return;
+    const du = $('#edDu').value.trim(), title = $('#edTitle').value.trim(), text = $('#edText').value.trim();
+    if(!text){ toast('판례원문을 입력해야 판례가 만들어져요'); $('#edText').focus(); return; }
+    const s = state.sets.find(x => x.id === $('#edSet').value); if(!s){ toast('세트를 먼저 만들어 주세요'); return; }
+    const tv = $('#edTopic').value;
+    if(pendingTopic && pendingTopic.id === tv && pendingTopic.setId === s.id){ s.topics.push({ id: pendingTopic.id, name: pendingTopic.name, items: [] }); pendingTopic = null; }
+    let tp = s.topics.find(x => x.id === tv);
+    if(!tp){ tp = s.topics.find(x => x.name === '기타') || (s.topics.push({ id: uid(), name: '기타', items: [] }), s.topics[s.topics.length - 1]); }
+    if(ed.mode === 'add'){
+      tp.items.push({ id: uid(), du, title, text });
+      save(); toast(`${tp.name || '주제'}에 판례를 추가했습니다`);
+      view = { kind: 'topic', setId: s.id, topicId: tp.id };
+      if(more){ $('#edDu').value = ''; $('#edTitle').value = ''; $('#edText').value = ''; fillTopics(s.id, tp.id); ed.snap = edVals(); $('#edDu').focus(); }
+      else editor.hidden = true;
+    } else {
+      const loc = findLoc(ed.id); if(!loc) return;
+      const changedText = loc.item.text !== text;
+      Object.assign(loc.item, { du, title, text });
+      if(loc.topic.id !== tp.id){ loc.topic.items = loc.topic.items.filter(x => x.id !== ed.id); tp.items.push(loc.item); }
+      save(); editor.hidden = true; toast('저장했습니다');
+      if(changedText && ed.id === activeId) resetActive();
+    }
+    refreshAll();
+  });
+
+  // ---------- 사진 → 판례원문 추출 (Claude) ----------
+  let sampleFn = null, canImg = false;
+  (async () => {
+    try{
+      if(window.claude && typeof window.claude.use === 'function'){
+        const sm = await window.claude.use('sample');
+        if(sm){ sampleFn = sm; const lim = await sm.limits(); canImg = !!(lim && lim.images); }
+      }
+    }catch(e){}
+    if(!editor.hidden && canImg && !$('#edOcr')) $('#edOcrWrap').innerHTML = ocrControls();
+  })();
+  const OCR_PROMPT = `첨부한 사진은 한국 법원 판례(판결요지·판시사항 등)를 찍은 것입니다. 사진 속 판례 본문 글자를 그대로 옮겨 적어 주세요.
+- 글자를 고치거나, 요약하거나, 덧붙이지 마세요.
+- 줄 끝에서 끊긴 문장은 이어 붙이고, 원래 문단이 나뉜 곳에서만 줄을 바꾸세요.
+- 쪽번호, 머리글, 밑줄·형광펜·필기 같은 부가 요소는 빼세요.
+- 사진이 여러 장이면 순서대로 이어 쓰세요.
+- 읽을 수 없는 글자는 [?]로 표시하세요.
+- 설명이나 머리말 없이 판례 본문만 출력하세요.`;
+  async function shrink(file){
+    try{
+      const bmp = await createImageBitmap(file);
+      const sc = Math.min(1, 2000 / Math.max(bmp.width, bmp.height));
+      const c = document.createElement('canvas'); c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc);
+      c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+      return await new Promise(r => c.toBlob(b => r(b || file), 'image/jpeg', 0.9));
+    }catch(e){ return file; }
+  }
+  const IMG_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>';
+  function ocrControls(){
+    return `<span class="ocr-wrap"><button class="btn sm" id="edOcr">${CAM} 사진에서 원문 추출</button>
+      <div class="menu ocr-menu" id="ocrMenu" hidden>
+        <button data-src="camera">${CAM}<span>카메라로 찍기<small>휴대폰 카메라가 바로 열려요</small></span></button>
+        <button data-src="gallery">${IMG_ICON}<span>갤러리·파일에서 고르기<small>여러 장 선택 가능 · 휴대폰에선 다른 카메라 앱도 고를 수 있어요</small></span></button>
+      </div></span>`;
+  }
+  $('#edOcrWrap').addEventListener('click', e => {
+    const menu = $('#ocrMenu'); if(!menu) return;
+    if(e.target.closest('#edOcr')){ menu.hidden = !menu.hidden; return; }
+    const opt = e.target.closest('[data-src]'); if(!opt) return;
+    menu.hidden = true;
+    const input = opt.dataset.src === 'camera' ? $('#ocrCam') : $('#ocrFile');
+    const pick = () => input.click();
+    if($('#edText').value.trim()) askConfirm('원문을 바꿀까요?', '지금 입력된 판례원문을 사진에서 추출한 내용으로 바꿉니다.', opt.dataset.src === 'camera' ? '카메라 열기' : '사진 고르기', pick, false);
+    else pick();
+  });
+  document.addEventListener('click', e => { const m = $('#ocrMenu'); if(m && !m.hidden && !e.target.closest('.ocr-wrap')) m.hidden = true; });
+  $('#ocrFile').addEventListener('change', e => handleOcrFiles(e));
+  $('#ocrCam').addEventListener('change', e => handleOcrFiles(e));
+  async function handleOcrFiles(e){
+    const files = [...e.target.files]; e.target.value = '';
+    if(!files.length || !sampleFn) return;
+    // 1) 사진마다 판례 부분만 잘라내기
+    const images = [];
+    for(let i = 0; i < files.length; i++){
+      const b = await cropOne(files[i], i, files.length);
+      if(!b){ toast('사진 추출을 취소했습니다'); return; }
+      images.push(b);
+    }
+    // 2) 잘라낸 영역만 Claude로 추출
+    const btn = $('#edOcr'); if(btn){ btn.disabled = true; btn.innerHTML = `${CAM} 원문 추출 중…`; }
+    const ta = $('#edText');
+    try{
+      const res = await sampleFn(OCR_PROMPT, { images, modelTier: 'default', cache: false, onText: ({ text }) => { ta.value = text; } });
+      ta.value = (res.text || '').trim();
+      toast('원문을 추출했습니다. 확인하고 고친 뒤 저장하세요');
+    }catch(err){
+      const code = err && err.code;
+      toast(code === 'not_granted' ? '사진 추출 권한이 허용되지 않았습니다' : code === 'rate_limited' ? '요청이 많아요. 잠시 후 다시 시도해 주세요' : '원문 추출에 실패했습니다');
+    }finally{
+      const b = $('#edOcr'); if(b){ b.disabled = false; b.innerHTML = `${CAM} 사진에서 원문 추출`; }
+    }
+  }
+
+  // ---------- 암기 팁 (판례 분석) ----------
+  let drawerId = null, anaBusy = null, anaCtrl = null;
+  const sq = s => String(s || '').replace(/\s+/g, '');
+  function textKey(t){ let h = 0; for(const c of String(t)) h = (h * 31 + c.charCodeAt(0)) | 0; return String(h); }
+  function mistakesFor(id){
+    const loc = findLoc(id); if(!loc) return [];
+    const w = splitWords(loc.item.text);
+    const rs = id === activeId ? results : (state.progress[id]?.results || []).map((r, i) => ({ typed: r.typed, target: w[i] ?? null, ok: w[i] != null && norm(r.typed) === norm(w[i]) }));
+    return rs.filter(r => !r.ok && r.target != null).map(r => ({ typed: r.typed, target: r.target }));
+  }
+  function openTips(id){
+    if(!id) return;
+    drawerId = id; $('#drawer').classList.add('show'); $('#right').classList.add('drawer-open');
+    renderTips();
+    const loc = findLoc(id), a = state.analysis[id];
+    if(loc && loc.item.text.trim() && sampleFn && !a) runAnalysis(id);
+  }
+  function closeTips(){
+    drawerId = null; $('#drawer').classList.remove('show'); $('#right').classList.remove('drawer-open');
+  }
+  const ANA_PROMPT = `당신은 한국 공인노무사 2차 시험 수험생의 판례 암기를 돕는 코치입니다. 아래 [판례원문]만 근거로 암기 팁을 만드세요.
+규칙:
+- 원문에 없는 법리, 사건번호, 학설, 사실관계를 덧붙이지 마세요.
+- structure의 text, keywords의 word, mnemonics의 parts.word, traps의 phrase는 반드시 원문에 있는 표현을 글자 그대로 옮기세요.
+- structure는 원문 전체를 순서대로, 의미 단위(정의·요건·효과·판단기준·예외·결론 등)로 빠짐없이 끊으세요.
+- keywords는 답안에서 빠지면 감점될 핵심어 3~6개를 고르세요.
+- mnemonics는 원문 핵심어의 첫 글자를 따서 만든 두문자 1~2개를 제안하세요.
+- traps는 조사·어미·순서처럼 틀리기 쉬운 원문 표현을 고르고, [사용자가 틀린 기록]이 있으면 그 부분을 먼저 다루세요.
+- 모든 설명은 한국어로 짧게 쓰세요.
+아래 형식의 JSON만 출력하세요.
+{"summary":"한 문장 요지","structure":[{"label":"정의","text":"원문 구절"}],"keywords":[{"word":"원문 핵심어","why":"한 줄 이유"}],"mnemonics":[{"du":"소·정·일","parts":[{"char":"소","word":"소정근로"}],"note":"한 줄 설명"}],"traps":[{"phrase":"원문 표현","note":"헷갈리기 쉬운 점"}]}`;
+  function verify(d, text){
+    const T = sq(text), inT = s => !!s && T.includes(sq(s));
+    const arr = v => Array.isArray(v) ? v : [];
+    return {
+      summary: String(d && d.summary || ''),
+      structure: arr(d && d.structure).filter(c => inT(c.text)),
+      keywords: arr(d && d.keywords).filter(k => inT(k.word)),
+      mnemonics: arr(d && d.mnemonics).filter(m => m.du && arr(m.parts).length && arr(m.parts).every(p => inT(p.word))),
+      traps: arr(d && d.traps).filter(t => inT(t.phrase))
+    };
+  }
+  async function runAnalysis(id){
+    const loc = findLoc(id); if(!loc || !sampleFn || anaBusy) return;
+    const text = loc.item.text, mine = mistakesFor(id);
+    anaBusy = id; renderTips();
+    const prompt = `${ANA_PROMPT}\n\n[판례원문]\n${text}\n\n[사용자가 틀린 기록] (입력 → 정답)\n${mine.length ? mine.map(m => `${m.typed} → ${m.target}`).join('\n') : '없음'}`;
+    anaCtrl = new AbortController();
+    try{
+      let data;
+      if(typeof sampleFn.json === 'function') data = await sampleFn.json(prompt, { modelTier: 'default', cache: false, signal: anaCtrl.signal });
+      else { const r = await sampleFn(prompt, { modelTier: 'default', cache: false, signal: anaCtrl.signal }); data = JSON.parse(((r.text || '').match(/\{[\s\S]*\}/) || ['{}'])[0]); }
+      if(data && data.value && !data.summary) data = data.value;
+      state.analysis[id] = { key: textKey(text), at: Date.now(), data: verify(data, text) }; save();
+    }catch(err){
+      const code = err && err.code;
+      if(code !== 'aborted' && !(err && err.name === 'AbortError'))
+        toast(code === 'not_granted' ? 'Claude 사용이 허용되지 않았습니다' : code === 'rate_limited' ? '요청이 많아요. 잠시 후 다시 시도해 주세요' : '분석에 실패했습니다. 다시 시도해 주세요');
+    }finally{ anaBusy = null; anaCtrl = null; if(drawerId) renderTips(); }
+  }
+  function tipSections(d){
+    let h = '';
+    if(d.summary) h += `<div class="dsec"><h4>한 줄 요지 (Claude 요약)</h4><div class="dsum">${esc(d.summary)}</div></div>`;
+    if(d.structure.length) h += `<div class="dsec"><h4>문장 구조로 끊어 읽기</h4>${d.structure.map(c => `<div class="chunk"><span class="clabel">${esc(c.label || '구절')}</span><span class="ctext">${esc(c.text)}</span></div>`).join('')}</div>`;
+    if(d.keywords.length) h += `<div class="dsec"><h4>꼭 외울 핵심어</h4><div class="kw">${d.keywords.map(k => `<div><b>${esc(k.word)}</b>${esc(k.why || '')}</div>`).join('')}</div></div>`;
+    if(d.mnemonics.length) h += `<div class="dsec"><h4>두문자 제안</h4>${d.mnemonics.map(m => `<div class="mn"><div class="top1"><span class="du">${esc(m.du)}</span><span class="spacer"></span><button class="btn sm use-du" data-du="${esc(m.du)}">이 두문자로 바꾸기</button></div>
+      <div class="parts">${m.parts.map(p => `<b>${esc(p.char)}</b> ${esc(p.word)}`).join(' · ')}</div>${m.note ? `<div class="parts">${esc(m.note)}</div>` : ''}</div>`).join('')}</div>`;
+    if(d.traps.length) h += `<div class="dsec"><h4>틀리기 쉬운 표현</h4>${d.traps.map(t => `<div class="trap"><span class="ph">${esc(t.phrase)}</span> ${esc(t.note || '')}</div>`).join('')}</div>`;
+    return h;
+  }
+  function renderTips(){
+    if(!drawerId) return;
+    const loc = findLoc(drawerId); if(!loc){ closeTips(); return; }
+    const it = loc.item, body = $('#dBody');
+    $('#dTitle').innerHTML = `${BULB} 암기 팁`;
+    $('#dSub').textContent = `${loc.topic.name || ''} › ${it.du ? it.du + ' · ' : ''}${it.title || '(제목 없음)'}`;
+    const mine = mistakesFor(drawerId);
+    const mineHtml = mine.length ? `<div class="dsec"><h4>내가 틀린 곳 ${mine.length}개</h4><div class="mine">${mine.map(m => `<div><s>${esc(m.typed)}</s> → <span class="ok">${esc(m.target)}</span></div>`).join('')}</div></div>` : '';
+    const a = state.analysis[drawerId];
+    $('#dRe').hidden = !sampleFn || !it.text.trim() || anaBusy === drawerId;
+    if(!it.text.trim()){ body.innerHTML = '<div class="empty">판례원문이 없어 분석할 수 없습니다.</div>'; return; }
+    if(!sampleFn){ body.innerHTML = mineHtml + '<div class="dnote">Claude 암기 팁 분석은 claude.ai에서 열었을 때 쓸 수 있어요.</div>'; return; }
+    if(anaBusy === drawerId){ body.innerHTML = '<div class="loading"><span class="spin"></span>Claude가 판례원문을 분석하고 있어요…</div>' + mineHtml; return; }
+    if(!a){ body.innerHTML = mineHtml + `<div><button class="btn primary" id="dRun">${BULB} 이 판례 분석하기</button></div>`; return; }
+    const stale = a.key !== textKey(it.text);
+    body.innerHTML = (stale ? '<div class="dnote" style="color:var(--bad)">판례원문이 수정됐어요. ‘다시 분석’을 누르면 바뀐 원문으로 다시 만듭니다.</div>' : '')
+      + mineHtml + tipSections(a.data)
+      + '<div class="dnote">Claude가 판례원문만 보고 만든 팁이에요. 원문에 없는 표현은 자동으로 걸러냈지만, 원문과 한 번 대조해 확인하세요.</div>';
+  }
+  $('#dClose').onclick = closeTips;
+  $('#dRe').onclick = () => { if(drawerId) runAnalysis(drawerId); };
+  $('#dBody').addEventListener('click', e => {
+    if(e.target.closest('#dRun')){ runAnalysis(drawerId); return; }
+    const u = e.target.closest('.use-du'); if(!u) return;
+    const loc = findLoc(drawerId); if(!loc) return;
+    const du = u.dataset.du;
+    askConfirm('두문자를 바꿀까요?', `'${loc.item.title || '이 판례'}'의 두문자를 ${loc.item.du ? `'${loc.item.du}'에서 ` : ''}'${du}'(으)로 바꿉니다.`, '바꾸기', () => {
+      loc.item.du = du; save(); renderLeft(); renderTips(); toast('두문자를 바꿨습니다');
+    }, false);
+  });
+
+  // ---------- 사진 자르기 ----------
+  const cropper = $('#cropper'), cropWrap = $('#cropWrap'), cropRectEl = $('#cropRect');
+  let crop = null, cdrag = null;
+  async function loadCanvas(file){
+    let src;
+    try{ src = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch(e){ src = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(file); }); }
+    const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight;
+    const sc = Math.min(1, 2400 / Math.max(w, h));
+    const c = document.createElement('canvas'); c.width = Math.round(w * sc); c.height = Math.round(h * sc);
+    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    c.className = 'crop-canvas'; return c;
+  }
+  function drawCrop(){ const { x, y, w, h } = crop.r; Object.assign(cropRectEl.style, { left: x*100+'%', top: y*100+'%', width: w*100+'%', height: h*100+'%' }); }
+  function setCanvas(c){ const old = cropWrap.querySelector('canvas'); if(old) old.remove(); cropWrap.prepend(c); crop.canvas = c; crop.r = { x:.04, y:.04, w:.92, h:.92 }; drawCrop(); }
+  function cropOne(file, i, n){
+    return new Promise(async resolve => {
+      let c; try{ c = await loadCanvas(file); }catch(e){ toast('이 사진은 열 수 없어요. JPG나 PNG로 올려 주세요'); resolve(null); return; }
+      crop = { canvas: null, r: null, resolve };
+      setCanvas(c);
+      $('#cropStep').textContent = n > 1 ? `사진 ${i + 1} / ${n}` : '';
+      $('#cropOk').textContent = i < n - 1 ? '이 영역으로 다음 사진' : '이 영역으로 추출';
+      cropper.hidden = false;
+    });
+  }
+  function finishCrop(ok){
+    if(!crop) return;
+    const { canvas: c, r, resolve } = crop; crop = null; cdrag = null; cropper.hidden = true;
+    if(!ok){ resolve(null); return; }
+    const sx = Math.round(r.x * c.width), sy = Math.round(r.y * c.height);
+    const sw = Math.max(1, Math.round(r.w * c.width)), sh = Math.max(1, Math.round(r.h * c.height));
+    const o = document.createElement('canvas'); o.width = sw; o.height = sh;
+    o.getContext('2d').drawImage(c, sx, sy, sw, sh, 0, 0, sw, sh);
+    o.toBlob(b => resolve(b), 'image/jpeg', 0.92);
+  }
+  function cpt(e){ const b = cropWrap.getBoundingClientRect(); return { x: Math.min(1, Math.max(0, (e.clientX - b.left) / b.width)), y: Math.min(1, Math.max(0, (e.clientY - b.top) / b.height)) }; }
+  cropWrap.addEventListener('pointerdown', e => {
+    if(!crop) return; e.preventDefault(); cropWrap.setPointerCapture(e.pointerId);
+    const p = cpt(e), r0 = { ...crop.r }, h = e.target.closest('.h');
+    if(h) cdrag = { mode: 'resize', dir: h.dataset.d, start: p, r0 };
+    else if(p.x >= r0.x && p.x <= r0.x + r0.w && p.y >= r0.y && p.y <= r0.y + r0.h) cdrag = { mode: 'move', start: p, r0 };
+    else { cdrag = { mode: 'new', start: p, r0 }; crop.r = { x: p.x, y: p.y, w: 0, h: 0 }; drawCrop(); }
+  });
+  cropWrap.addEventListener('pointermove', e => {
+    if(!cdrag || !crop) return;
+    const p = cpt(e), { r0, start } = cdrag, MIN = .03; let { x, y, w, h } = r0;
+    if(cdrag.mode === 'move'){ x = Math.min(1 - w, Math.max(0, r0.x + p.x - start.x)); y = Math.min(1 - h, Math.max(0, r0.y + p.y - start.y)); }
+    else if(cdrag.mode === 'new'){ x = Math.min(start.x, p.x); y = Math.min(start.y, p.y); w = Math.abs(p.x - start.x); h = Math.abs(p.y - start.y); }
+    else {
+      let l = r0.x, t = r0.y, rr = r0.x + r0.w, bb = r0.y + r0.h; const d = cdrag.dir;
+      if(d.includes('w')) l = Math.min(p.x, rr - MIN);
+      if(d.includes('e')) rr = Math.max(p.x, l + MIN);
+      if(d.includes('n')) t = Math.min(p.y, bb - MIN);
+      if(d.includes('s')) bb = Math.max(p.y, t + MIN);
+      x = l; y = t; w = rr - l; h = bb - t;
+    }
+    crop.r = { x, y, w, h }; drawCrop();
+  });
+  const endDrag = () => { if(cdrag && cdrag.mode === 'new' && crop && (crop.r.w < .03 || crop.r.h < .03)){ crop.r = cdrag.r0; drawCrop(); } cdrag = null; };
+  cropWrap.addEventListener('pointerup', endDrag);
+  cropWrap.addEventListener('pointercancel', endDrag);
+  $('#cropOk').onclick = () => finishCrop(true);
+  $('#cropCancel').onclick = () => finishCrop(false);
+  $('#cropAll').onclick = () => { if(crop){ crop.r = { x: 0, y: 0, w: 1, h: 1 }; drawCrop(); } };
+  $('#cropRotate').onclick = () => {
+    if(!crop) return; const c = crop.canvas;
+    const o = document.createElement('canvas'); o.width = c.height; o.height = c.width;
+    const g = o.getContext('2d'); g.translate(o.width, 0); g.rotate(Math.PI / 2); g.drawImage(c, 0, 0);
+    o.className = 'crop-canvas'; setCanvas(o);
+  };
+
+  // Esc: 가장 위 창부터 닫기
+  document.addEventListener('keydown', e => {
+    if(e.key !== 'Escape') return;
+    if(!cdlg.hidden){ e.preventDefault(); closeConfirm(); }
+    else if(!namer.hidden){ e.preventDefault(); closeNamer(); }
+    else if(!cropper.hidden){ e.preventDefault(); finishCrop(false); }
+    else if(!editor.hidden){ e.preventDefault(); closeEditor(); }
+    else if(!modal.hidden){ e.preventDefault(); closeModal(); }
+    else if(drawerId){ e.preventDefault(); closeTips(); }
+  });
+
+  // ---------- 가져오기 / 내보내기 ----------
+  function exportJSON(){
+    return JSON.stringify(state.sets.map(s => ({ name: s.name, topics: s.topics.map(t => ({ name: t.name,
+      items: t.items.map(it => ({ '두문자': it.du, '제목': it.title, '원문': it.text })) })) })), null, 2);
+  }
+  $('#exportBtn').onclick = async () => {
+    const txt = exportJSON();
+    try{ await navigator.clipboard.writeText(txt); toast('판례리스트 JSON을 복사했습니다'); }
+    catch(e){ $('#pastebox').hidden = false; $('#pasteArea').value = txt; $('#pasteArea').select(); toast('복사가 막혀 있어요. 아래 내용을 직접 복사하세요'); }
+  };
+  function importJSON(txt){
+    let data; try{ data = JSON.parse(txt); }catch(e){ toast('JSON 형식이 올바르지 않습니다'); return; }
+    if(data && !Array.isArray(data)) data = data.sets || [data];
+    let n = 0;
+    data.forEach(raw => {
+      if(!raw || (!Array.isArray(raw.items) && !Array.isArray(raw.topics))) return;
+      const s = migSet({ ...raw, id: undefined });
+      s.id = uid(); s.name = s.name || '가져온 판례리스트';
+      s.topics.forEach(t => { t.id = uid(); t.items.forEach(it => it.id = uid()); });
+      state.sets.push(s); state.loaded.push(s.id); n++;
+    });
+    if(!n){ toast('가져올 세트를 찾지 못했습니다'); return; }
+    save(); mSearch.value = ''; view = { kind: 'set', setId: state.sets[state.sets.length-1].id }; renderModal(); $('#pastebox').hidden = true; toast(`${n}개 세트를 가져왔습니다`);
+  }
+  $('#pasteBtn').onclick = () => { $('#pastebox').hidden = false; $('#pasteArea').value=''; $('#pasteArea').focus(); };
+  $('#pasteCancel').onclick = () => $('#pastebox').hidden = true;
+  $('#pasteApply').onclick = () => importJSON($('#pasteArea').value);
+  $('#importFile').onchange = e => { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = () => importJSON(r.result); r.readAsText(f); e.target.value=''; };
+
+  // 시작
+  renderSetMenu(); renderLeft(); renderTyping();
+  topicInput.focus();
+})();
+</script>
+<script>
+  // 오프라인에서도 열리도록 서비스워커 등록 (GitHub Pages 등 https에서만 동작)
+  if('serviceWorker' in navigator && location.protocol === 'https:'){
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+</script>
+</body>
+</html>
