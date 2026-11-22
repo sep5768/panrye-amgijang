@@ -1,6 +1,6 @@
 // 판례암기장 서비스워커: 앱 파일을 저장해 두고 오프라인에서도 열리게 함
 // 앱을 수정해서 다시 올릴 때는 아래 버전 숫자를 올려 주세요.
-const CACHE = 'panrye-amgijang-v3';
+const CACHE = 'panrye-amgijang-v28';
 const CORE = ['./', './index.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
