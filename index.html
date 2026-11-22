@@ -53,6 +53,7 @@
   .hright{position:absolute;right:20px;top:10px;height:40px;display:flex;align-items:center;gap:8px}
   @media (max-width:600px){ .top{padding-right:20px} .top .brand{flex-basis:100%;height:40px} .hright .tlabel{display:none} .opts label{white-space:nowrap} }
   .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;letter-spacing:-.02em;margin-right:8px}
+  .bgen{color:var(--accent);margin-right:1px}
   .brand .mark{width:28px;height:28px;border-radius:8px;background:var(--accent);display:grid;place-items:center}
   .loader{position:relative}
   .menu{position:absolute;top:calc(100% + 6px);left:0;z-index:20;min-width:250px;background:var(--white);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 12px 32px rgba(30,25,70,.12);padding:6px}
@@ -543,7 +544,7 @@
 <header class="top">
   <div class="brand">
     <span class="mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
-    판례암기장
+    <span class="bname"><span class="bgen">36기</span> 콩순놈</span>
   </div>
   <div class="modes" role="tablist"><button class="subj on" data-subj="law">법 과목</button><button class="subj" data-subj="biz">경영 과목</button></div>
   <div class="modes" role="tablist"><button class="mode on" data-mode="pan">판례 암기</button><button class="mode" data-mode="toc">목차 연습</button></div>
